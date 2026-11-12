@@ -1,0 +1,12 @@
+test_csv_quotes_and_context (test_comparison_export.ComparisonExportTest.test_csv_quotes_and_context) ... ok
+test_either_or_both_missing (test_comparison_export.ComparisonExportTest.test_either_or_both_missing) ... ok
+test_signed_and_zero_differences (test_comparison_export.ComparisonExportTest.test_signed_and_zero_differences) ... ok
+test_duplicate_depth_is_rejected_with_row (test_input_validation.InputValidationTest.test_duplicate_depth_is_rejected_with_row) ... ok
+test_missing_column_is_rejected (test_input_validation.InputValidationTest.test_missing_column_is_rejected) ... ok
+test_nonnumeric_value_is_rejected_with_row (test_input_validation.InputValidationTest.test_nonnumeric_value_is_rejected_with_row) ... ok
+test_unordered_depth_is_rejected_without_sorting (test_input_validation.InputValidationTest.test_unordered_depth_is_rejected_without_sorting) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.004s
+
+OK
