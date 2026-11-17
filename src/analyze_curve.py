@@ -13,6 +13,7 @@ import json
 import math
 import sys
 from dataclasses import asdict, dataclass
+from io import StringIO
 from pathlib import Path
 from typing import Sequence, TextIO
 
@@ -51,6 +52,14 @@ def load_curve(path: Path) -> list[Point]:
 
     with handle:
         return load_curve_stream(handle)
+
+
+def load_uploaded_curve(data: bytes) -> list[Point]:
+    """Decode an uploaded CSV and apply the app's input requirements."""
+    points = load_curve_stream(StringIO(data.decode("utf-8-sig"), newline=""))
+    if any(point.depth_mm < 0 or point.value < 0 for point in points):
+        raise CurveDataError("Depth and relative dose values must be non-negative.")
+    return points
 
 
 def load_curve_stream(handle: TextIO) -> list[Point]:

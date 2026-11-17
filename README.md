@@ -14,6 +14,7 @@ A Python and Streamlit educational prototype that turns depth–dose CSV files i
 - Overlays a bundled or uploaded reference and reports ΔR80 = current − reference.
 - Exports source information, metrics, statuses, calculation method, and limitations as CSV.
 - Reports **Not evaluable** when a distal crossing cannot be calculated; exported unavailable numeric fields stay blank.
+- Plots ΔR80 over four synthetic measurement dates against a fixed reference.
 
 ## Screenshots
 
@@ -58,6 +59,14 @@ Open the Local URL printed in the terminal, usually http://localhost:8501. Keep 
 3. Check current peak 12 mm, current R80 13 mm, reference R80 11 mm, and ΔR80 +2 mm.
 4. Download the comparison CSV and check that it matches the page.
 5. Replace the current file with `upload_no_crossing.csv`. The curve remains visible, while current R80 and ΔR80 become **Not evaluable**. Their exported numeric fields are blank, not zero.
+
+## Try the R80 trend
+
+Open **R80 Trend** in the sidebar. The fixed reference has a distal R80 of **11 mm**. The first three dates show **0, +1, and +2 mm** differences. On the fourth date, the curve has no distal 80% crossing, so the graph has no point and the table gives the reason.
+
+Select **Upload CSV files** to add multiple depth–dose CSVs and enter a measurement date for each. Dated files appear in chronological order. Invalid files and curves without an R80 crossing appear in the results table with their reasons. The reference is the bundled synthetic teaching curve in both modes.
+
+Select **Download trend results (CSV)** to save the displayed rows in the same order. Each row includes the date, filename, measurement and reference R80, ΔR80, status, and explanation. A zero difference is exported as a number. Unavailable measurement and difference fields are empty. Filenames that could be interpreted as formulas are prefixed with an apostrophe for spreadsheet safety.
 
 ## Input format
 

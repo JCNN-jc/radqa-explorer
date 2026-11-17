@@ -9,7 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import streamlit as st
 
-from src.analyze_curve import CurveDataError, distal_r80, find_peak, load_curve, load_curve_stream
+from src.analyze_curve import CurveDataError, distal_r80, find_peak, load_curve, load_uploaded_curve
 from src.comparison_export import comparison_record, csv_bytes
 
 ROOT = Path(__file__).resolve().parent
@@ -18,14 +18,7 @@ FIXTURE = ROOT / "data" / "fixtures" / "day3_handcheck_curve.csv"
 
 def read_points(upload):
     """Use one validator for both inputs; uploads stay in memory."""
-    if upload is None:
-        points = load_curve(FIXTURE)
-    else:
-        text = upload.getvalue().decode("utf-8-sig")
-        points = load_curve_stream(StringIO(text, newline=""))
-    if any(p.depth_mm < 0 or p.value < 0 for p in points):
-        raise CurveDataError("Depth and relative dose values must be non-negative.")
-    return points
+    return load_curve(FIXTURE) if upload is None else load_uploaded_curve(upload.getvalue())
 
 
 def load_or_stop(upload, role):

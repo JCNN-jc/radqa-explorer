@@ -47,9 +47,13 @@ def comparison_record(current, reference):
 
 
 def csv_bytes(record):
+    return csv_records_bytes([record])
+
+
+def csv_records_bytes(records):
     """Quote text using the CSV standard and include a BOM for Excel."""
     buffer = StringIO(newline="")
-    writer = csv.DictWriter(buffer, fieldnames=list(record))
+    writer = csv.DictWriter(buffer, fieldnames=list(records[0]))
     writer.writeheader()
-    writer.writerow(record)
+    writer.writerows(records)
     return buffer.getvalue().encode("utf-8-sig")
