@@ -7,6 +7,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import streamlit as st
 
 from src.analyze_curve import CurveDataError, distal_r80, find_peak, load_curve, load_uploaded_curve
@@ -46,11 +47,88 @@ def draw_curve(ax, points, peak, result, color, role, style="-"):
                label=f"{role}: 80% of maximum")
 
 
+
+def synthetic_proton_curve(energy_mev):
+    """Generate an educational proton depth-dose curve from beam energy.
+
+    The range relation is an approximate empirical water-range model. The
+    curve shape is synthetic and is not intended for treatment planning or
+    clinical QA.
+    """
+    range_mm = 10.0 * 0.0022 * (energy_mev ** 1.77)
+    depth_mm = np.linspace(0.0, 360.0, 900)
+
+    # Slowly increasing entrance dose plus a narrow distal Bragg peak.
+    entrance = 22.0 + 10.0 * np.clip(depth_mm / max(range_mm, 1.0), 0.0, 1.0)
+    peak_center = max(range_mm - 3.0, 1.0)
+    peak_width = 3.0 + 0.006 * range_mm
+    bragg_peak = 78.0 * np.exp(-0.5 * ((depth_mm - peak_center) / peak_width) ** 2)
+
+    # Sharp distal falloff beyond the estimated range.
+    cutoff = 1.0 / (1.0 + np.exp(np.clip((depth_mm - range_mm) / 0.9, -60, 60)))
+    dose = (entrance + bragg_peak) * cutoff
+    dose = 100.0 * dose / np.max(dose)
+
+    peak_index = int(np.argmax(dose))
+    return depth_mm, dose, range_mm, float(depth_mm[peak_index])
+
+
 st.set_page_config(page_title="RadQA Explorer", page_icon="📈", layout="centered")
 st.title("RadQA Explorer")
 st.caption("Radiation Therapy Data Visualization and QA Analytics · Reference comparison")
 st.write("Explore a depth–dose curve and compare its distal R80 with a reference.")
 st.caption("Educational example only. This is not a clinical QA result or patient-specific treatment guidance.")
+
+
+st.subheader("Interactive Proton Energy Explorer")
+st.write("Drag the beam-energy slider to see how the estimated proton range and Bragg peak move through water-like tissue.")
+energy_mev = st.slider(
+    "Proton energy (MeV)",
+    min_value=70,
+    max_value=230,
+    value=150,
+    step=5,
+    help="Educational synthetic model only; not a clinical beam model.",
+)
+sim_depth, sim_dose, estimated_range_mm, simulated_peak_mm = synthetic_proton_curve(energy_mev)
+
+energy_col, range_col, sim_peak_col = st.columns(3)
+energy_col.metric("Selected energy", f"{energy_mev} MeV")
+range_col.metric("Estimated range", f"{estimated_range_mm:.1f} mm")
+sim_peak_col.metric("Bragg peak depth", f"{simulated_peak_mm:.1f} mm")
+
+sim_fig, sim_ax = plt.subplots(figsize=(8, 4.4), layout="constrained")
+sim_ax.plot(sim_depth, sim_dose, linewidth=2.2)
+sim_ax.axvline(
+    simulated_peak_mm,
+    linestyle=":",
+    alpha=0.8,
+    label=f"Bragg peak: {simulated_peak_mm:.1f} mm",
+)
+sim_ax.axvline(
+    estimated_range_mm,
+    linestyle="--",
+    alpha=0.7,
+    label=f"Estimated range: {estimated_range_mm:.1f} mm",
+)
+sim_ax.set(
+    title="Synthetic proton depth-dose curve",
+    xlabel="Depth in water-like tissue (mm)",
+    ylabel="Normalized relative dose (%)",
+    xlim=(0, 360),
+    ylim=(0, 108),
+)
+sim_ax.grid(alpha=0.2)
+sim_ax.legend(fontsize=8, loc="best")
+st.pyplot(sim_fig)
+plt.close(sim_fig)
+st.caption(
+    "As beam energy increases, the modeled proton range increases and the Bragg peak moves deeper. "
+    "This visualization uses a synthetic educational model and is not suitable for treatment planning or clinical QA."
+)
+
+st.divider()
+st.subheader("Depth–dose CSV analysis")
 
 uploaded = st.file_uploader("Upload a depth–dose CSV", type=["csv"],
                             max_upload_size=5, key="current_csv")
